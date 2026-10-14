@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
   <title>Terminal Valuasi Saham & Obligasi — DCF, Multiples, Duration & Convexity</title>
   <style>
     :root {
@@ -32,11 +33,24 @@
       --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
       --radius-md: 10px;
       --radius-lg: 14px;
+      --gutter: 24px;
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       --font-mono: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      color-scheme: light;
+
+      /* Safe area (notch / system bars) */
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    [data-theme="dark"] {
+    html {
+      scroll-padding-top: env(safe-area-inset-top, 0px);
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    :root[data-theme="dark"] {
       --bg-body: #090d16;
       --bg-surface: #111827;
       --bg-subtle: #1e293b;
@@ -58,6 +72,34 @@
       --crimson-text: #fca5a5;
       --crimson-bg: rgba(153, 27, 27, 0.35);
       --crimson-border: #dc2626;
+      color-scheme: dark;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg-body: #090d16;
+        --bg-surface: #111827;
+        --bg-subtle: #1e293b;
+        --bg-nav: #030712;
+        --text-main: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border-color: #334155;
+        --border-subtle: #1e293b;
+        --accent-primary: #3b82f6;
+        --accent-hover: #60a5fa;
+        --accent-soft: rgba(59, 130, 246, 0.18);
+        --emerald-text: #6ee7b7;
+        --emerald-bg: rgba(6, 95, 70, 0.35);
+        --emerald-border: #059669;
+        --amber-text: #fcd34d;
+        --amber-bg: rgba(146, 64, 14, 0.35);
+        --amber-border: #d97706;
+        --crimson-text: #fca5a5;
+        --crimson-bg: rgba(153, 27, 27, 0.35);
+        --crimson-border: #dc2626;
+        color-scheme: dark;
+      }
     }
 
     * {
@@ -75,14 +117,19 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Top Header & Navigation */
+    :focus-visible {
+      outline: 2px solid var(--accent-primary);
+      outline-offset: 2px;
+    }
+
+    /* ================= Header ================= */
     .top-header {
       background: var(--bg-nav);
       color: #f8fafc;
-      padding: 16px 24px;
+      padding: 16px var(--gutter);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       position: sticky;
-      top: 0;
+      top: env(safe-area-inset-top, 0px);
       z-index: 100;
     }
 
@@ -93,16 +140,18 @@
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      gap: 12px 16px;
     }
 
     .brand-group {
       display: flex;
       align-items: center;
       gap: 12px;
+      min-width: 0;
     }
 
     .brand-icon {
+      flex: none;
       width: 38px;
       height: 38px;
       border-radius: 9px;
@@ -115,6 +164,10 @@
       letter-spacing: -0.5px;
       color: #ffffff;
       box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .brand-title {
+      min-width: 0;
     }
 
     .brand-title h1 {
@@ -134,6 +187,7 @@
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
+      min-width: 0;
     }
 
     .preset-label {
@@ -151,6 +205,7 @@
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
+      white-space: nowrap;
       transition: all 0.15s ease;
     }
 
@@ -168,9 +223,10 @@
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
+      white-space: nowrap;
     }
 
-    /* Navigation Tabs */
+    /* ================= Navigation Tabs ================= */
     .nav-bar {
       background: var(--bg-surface);
       border-bottom: 1px solid var(--border-color);
@@ -182,11 +238,15 @@
       margin: 0 auto;
       display: flex;
       overflow-x: auto;
-      padding: 0 24px;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      padding: 0 var(--gutter);
       gap: 4px;
     }
 
     .tab-btn {
+      flex: none;
       background: transparent;
       border: none;
       border-bottom: 3px solid transparent;
@@ -223,11 +283,11 @@
       font-family: var(--font-mono);
     }
 
-    /* Main Container */
+    /* ================= Main Container & Layout ================= */
     .main-container {
       max-width: 1440px;
       margin: 24px auto;
-      padding: 0 24px 48px;
+      padding: 0 var(--gutter) 48px;
     }
 
     .tab-panel {
@@ -238,29 +298,27 @@
       display: block;
     }
 
-    /* Grid Layouts */
     .workspace-grid {
       display: grid;
-      grid-template-columns: 420px 1fr;
+      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
       gap: 24px;
       align-items: start;
     }
 
     .two-col-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 24px;
+      align-items: start;
     }
 
-    @media (max-width: 1100px) {
-
-      .workspace-grid,
-      .two-col-grid {
-        grid-template-columns: 1fr;
-      }
+    /* Setiap kolom menjadi "container" supaya KPI & input menyesuaikan lebar kolom, bukan lebar layar */
+    .col {
+      min-width: 0;
+      container-type: inline-size;
     }
 
-    /* Cards & Panels */
+    /* ================= Cards ================= */
     .card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
@@ -275,9 +333,10 @@
       background: var(--bg-subtle);
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 6px 12px;
     }
 
     .card-header h2 {
@@ -287,19 +346,28 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 0;
+      flex: 1 1 240px;
     }
 
     .card-header .subtitle {
       font-size: 11.5px;
       color: var(--text-muted);
       font-weight: 500;
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     .card-body {
       padding: 18px;
     }
 
-    /* Form Controls */
+    .card-body.flush {
+      padding: 0;
+    }
+
+    /* ================= Form Controls ================= */
     .form-section-title {
       font-size: 11.5px;
       font-weight: 700;
@@ -317,7 +385,7 @@
 
     .input-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 12px;
     }
 
@@ -325,6 +393,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
     }
 
     .input-group.full {
@@ -336,8 +405,10 @@
       font-weight: 600;
       color: var(--text-secondary);
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
-      align-items: center;
+      align-items: baseline;
+      gap: 0 8px;
     }
 
     .input-group label span.unit-hint {
@@ -351,11 +422,14 @@
       position: relative;
       display: flex;
       align-items: center;
+      min-width: 0;
     }
 
     .input-wrapper input,
     .input-wrapper select {
       width: 100%;
+      min-width: 0;
+      min-height: 38px;
       padding: 8px 10px;
       font-size: 13.5px;
       font-family: var(--font-mono);
@@ -379,6 +453,7 @@
       background: var(--accent-primary);
       color: #ffffff;
       border: none;
+      min-height: 38px;
       padding: 8px 14px;
       border-radius: 7px;
       font-size: 12.5px;
@@ -410,18 +485,37 @@
       background: var(--border-subtle);
     }
 
-    /* KPI Summary Strip */
+    .wacc-footer {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wacc-footer span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ================= KPI ================= */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
       margin-bottom: 20px;
     }
 
-    @media (max-width: 900px) {
-      .kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    .kpi-grid.cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 14px;
+      margin-bottom: 0;
+    }
+
+    .kpi-grid.cols-2.spaced {
+      margin-top: 16px;
+      margin-bottom: 14px;
     }
 
     .kpi-card {
@@ -433,6 +527,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      min-width: 0;
     }
 
     .kpi-card.highlight {
@@ -463,11 +558,12 @@
     }
 
     .kpi-value {
-      font-size: 20px;
+      font-size: clamp(16px, 1.6vw + 8px, 20px);
       font-weight: 800;
       font-family: var(--font-mono);
       color: var(--text-main);
       letter-spacing: -0.5px;
+      overflow-wrap: anywhere;
     }
 
     .kpi-sub {
@@ -475,11 +571,34 @@
       margin-top: 6px;
       font-weight: 600;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 6px;
+      gap: 4px 6px;
+      overflow-wrap: anywhere;
     }
 
-    /* Status Badges & Diagnostic Alerts */
+    /* Responsif berdasarkan lebar KOLOM (container query) */
+    @container (max-width: 760px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @container (max-width: 440px) {
+      .input-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @container (max-width: 300px) {
+
+      .kpi-grid,
+      .kpi-grid.cols-2 {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    /* ================= Badges & Banners ================= */
     .badge {
       display: inline-flex;
       align-items: center;
@@ -488,6 +607,8 @@
       font-size: 11px;
       font-weight: 700;
       font-family: var(--font-mono);
+      max-width: 100%;
+      overflow-wrap: anywhere;
     }
 
     .badge-emerald {
@@ -519,6 +640,7 @@
       border: 1px solid var(--amber-border);
       background: var(--amber-bg);
       color: var(--amber-text);
+      overflow-wrap: anywhere;
     }
 
     .diagnostic-banner.critical {
@@ -537,14 +659,20 @@
       font-weight: 700;
     }
 
-    /* Tables */
+    .diagnostic-banner:empty {
+      display: none;
+    }
+
+    /* ================= Tables ================= */
     .table-responsive {
       width: 100%;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     table.data-table {
       width: 100%;
+      min-width: 520px;
       border-collapse: collapse;
       font-size: 12.5px;
     }
@@ -589,7 +717,10 @@
       border-bottom: none;
     }
 
-    /* Sensitivity Heatmap Table */
+    table.matrix-table {
+      min-width: 640px;
+    }
+
     table.matrix-table th,
     table.matrix-table td {
       text-align: center !important;
@@ -597,8 +728,19 @@
       border: 1px solid var(--border-subtle);
     }
 
+    /* Kolom pertama matriks (label WACC) tetap terlihat saat digeser */
+    table.matrix-table th:first-child,
+    table.matrix-table td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: var(--bg-subtle);
+      text-align: left !important;
+    }
+
     table.matrix-table td.cell-center {
       outline: 2px solid var(--accent-primary);
+      outline-offset: -2px;
       font-weight: 800;
     }
 
@@ -619,7 +761,14 @@
       font-weight: 600;
     }
 
-    /* SVG Charts Container */
+    .scroll-hint {
+      display: none;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 6px 18px 0;
+    }
+
+    /* ================= Charts (SVG) ================= */
     .chart-box {
       width: 100%;
       background: var(--bg-subtle);
@@ -627,6 +776,14 @@
       border-radius: var(--radius-md);
       padding: 14px;
       margin-top: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .chart-svg {
+      display: block;
+      width: 100%;
+      height: auto;
     }
 
     .slider-row {
@@ -642,8 +799,16 @@
 
     .slider-row input[type="range"] {
       flex: 1;
+      min-width: 0;
+      min-height: 28px;
       accent-color: var(--accent-primary);
       cursor: pointer;
+    }
+
+    .slider-row span {
+      flex: none;
+      font-family: var(--font-mono);
+      font-size: 12px;
     }
 
     .formula-box {
@@ -671,6 +836,142 @@
 
     .mentor-note li {
       margin-bottom: 6px;
+    }
+
+    .hint-text {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    /* ================= Breakpoints ================= */
+    @media (max-width: 1100px) {
+
+      .workspace-grid,
+      .two-col-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .scroll-hint {
+        display: block;
+      }
+    }
+
+    @media (max-width: 720px) {
+      :root {
+        --gutter: 14px;
+      }
+
+      /* Header tidak lagi menempel (terlalu tinggi di layar kecil); yang menempel adalah tab */
+      .top-header {
+        position: static;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+
+      .nav-bar {
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        z-index: 90;
+      }
+
+      .brand-title h1 {
+        font-size: 15px;
+      }
+
+      .brand-title p {
+        display: none;
+      }
+
+      .header-controls {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        width: 100%;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .preset-label {
+        display: none;
+      }
+
+      .btn-preset,
+      .btn-theme {
+        flex: none;
+        min-height: 36px;
+      }
+
+      .tab-btn {
+        padding: 12px 14px;
+        font-size: 13px;
+      }
+
+      .tab-badge {
+        display: none;
+      }
+
+      .main-container {
+        margin-top: 14px;
+      }
+
+      .card-header {
+        padding: 12px 14px;
+      }
+
+      .card-body {
+        padding: 14px;
+      }
+
+      .scroll-hint {
+        padding-left: 14px;
+      }
+
+      /* Font >= 16px mencegah iOS memperbesar layar saat input difokuskan */
+      .input-wrapper input,
+      .input-wrapper select {
+        font-size: 16px;
+        min-height: 42px;
+      }
+
+      .btn-action {
+        min-height: 42px;
+      }
+
+      .wacc-footer .btn-action {
+        width: 100%;
+      }
+
+      .slider-row {
+        flex-wrap: wrap;
+        gap: 6px 10px;
+      }
+
+      .slider-row input[type="range"] {
+        order: -1;
+        flex: 1 0 100%;
+      }
+
+      .slider-row span:first-of-type {
+        margin-right: auto;
+      }
+
+      .kpi-card {
+        padding: 12px;
+      }
+
+      .chart-box {
+        padding: 10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
     }
   </style>
 </head>
@@ -731,12 +1032,12 @@
       <div class="workspace-grid">
 
         <!-- LEFT COLUMN: INPUT PARAMETERS -->
-        <div>
+        <div class="col">
           <!-- WACC Calculator Card -->
           <div class="card">
             <div class="card-header">
               <h2>A. Kalkulator WACC (Biaya Modal Rata-Rata Tertimbang)</h2>
-              <span class="badge badge-emerald" id="waccBadge">WACC: 10.12%</span>
+              <span class="badge badge-emerald" id="waccBadge">WACC: 11.18%</span>
             </div>
             <div class="card-body">
               <div class="form-section-title">Komponen Biaya Ekuitas (CAPM)</div>
@@ -744,19 +1045,19 @@
                 <div class="input-group">
                   <label>Risk-Free Rate (R<sub>f</sub>) <span class="unit-hint">% SBN 10Y</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="wacc_rf" value="6.75" step="0.05" oninput="calcWACC()" />
+                    <input type="number" inputmode="decimal" id="wacc_rf" value="6.75" step="0.05" oninput="calcWACC()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Beta Saham (&beta;) <span class="unit-hint">Sensitivitas</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="wacc_beta" value="1.05" step="0.05" oninput="calcWACC()" />
+                    <input type="number" inputmode="decimal" id="wacc_beta" value="1.05" step="0.05" oninput="calcWACC()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Equity Risk Premium <span class="unit-hint">% (R<sub>m</sub> - R<sub>f</sub>)</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="wacc_erp" value="5.50" step="0.10" oninput="calcWACC()" />
+                    <input type="number" inputmode="decimal" id="wacc_erp" value="5.50" step="0.10" oninput="calcWACC()" />
                   </div>
                 </div>
                 <div class="input-group">
@@ -772,33 +1073,31 @@
                 <div class="input-group">
                   <label>Cost of Debt Pre-Tax <span class="unit-hint">% Bunga</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="wacc_kd" value="8.50" step="0.10" oninput="calcWACC()" />
+                    <input type="number" inputmode="decimal" id="wacc_kd" value="8.50" step="0.10" oninput="calcWACC()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Tarif Pajak Efektif (T) <span class="unit-hint">% PPh Badan</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="wacc_tax" value="22.0" step="0.5" oninput="calcWACC()" />
+                    <input type="number" inputmode="decimal" id="wacc_tax" value="22.0" step="0.5" oninput="calcWACC()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Nilai Pasar Ekuitas (E) <span class="unit-hint">Miliar Rp</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="wacc_eq_val" value="85000" step="1000" oninput="calcWACC()" />
+                    <input type="number" inputmode="decimal" id="wacc_eq_val" value="85000" step="1000" oninput="calcWACC()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Total Utang Berbunga (D) <span class="unit-hint">Miliar Rp</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="wacc_debt_val" value="25000" step="1000" oninput="calcWACC()" />
+                    <input type="number" inputmode="decimal" id="wacc_debt_val" value="25000" step="1000" oninput="calcWACC()" />
                   </div>
                 </div>
               </div>
 
-              <div
-                style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                <span style="font-size: 12px; color: var(--text-muted);" id="waccBreakdownText">Bobot: 77.3% Ekuitas /
-                  22.7% Utang</span>
+              <div class="wacc-footer">
+                <span id="waccBreakdownText">Bobot: 77.3% Ekuitas / 22.7% Utang</span>
                 <button class="btn-action" onclick="syncWACCtoDCF()">Gunakan WACC ke DCF &rarr;</button>
               </div>
             </div>
@@ -816,37 +1115,37 @@
                 <div class="input-group">
                   <label>Free Cash Flow Awal (FCF<sub>0</sub>) <span class="unit-hint">Miliar Rp</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_fcf0" value="5200" step="100" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_fcf0" value="5200" step="100" oninput="calcDCF()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Discount Rate (WACC) <span class="unit-hint">% / Tahun</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_wacc" value="11.18" step="0.05" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_wacc" value="11.18" step="0.05" oninput="calcDCF()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Growth Tahap 1 (Thn 1–5) <span class="unit-hint">% / Tahun</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_g1" value="12.50" step="0.25" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_g1" value="12.50" step="0.25" oninput="calcDCF()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Growth Tahap 2 (Thn 6–10) <span class="unit-hint">% / Tahun</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_g2" value="8.00" step="0.25" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_g2" value="8.00" step="0.25" oninput="calcDCF()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Terminal Growth (g<sub>n</sub>) <span class="unit-hint">% Perpetuity</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_gn" value="4.50" step="0.10" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_gn" value="4.50" step="0.10" oninput="calcDCF()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Margin of Safety (MoS) <span class="unit-hint">% Diskon</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_mos" value="25.0" step="1.0" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_mos" value="25.0" step="1.0" oninput="calcDCF()" />
                   </div>
                 </div>
               </div>
@@ -856,13 +1155,13 @@
                 <div class="input-group">
                   <label>EBITDA Tahun ke-10 <span class="unit-hint">Miliar Rp</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_ebitda10" value="18500" step="500" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_ebitda10" value="18500" step="500" oninput="calcDCF()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Target Exit EV/EBITDA <span class="unit-hint">Multiple (x)</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_exit_mult" value="9.5" step="0.5" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_exit_mult" value="9.5" step="0.5" oninput="calcDCF()" />
                   </div>
                 </div>
               </div>
@@ -872,25 +1171,25 @@
                 <div class="input-group">
                   <label>Kas &amp; Setara Kas (+) <span class="unit-hint">Miliar Rp</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_cash" value="14500" step="500" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_cash" value="14500" step="500" oninput="calcDCF()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Total Utang Berbunga (-) <span class="unit-hint">Miliar Rp</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_debt" value="25000" step="500" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_debt" value="25000" step="500" oninput="calcDCF()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Jumlah Saham Beredar <span class="unit-hint">Miliar Lembar</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_shares" value="24.50" step="0.5" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_shares" value="24.50" step="0.5" oninput="calcDCF()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Harga Pasar Saat Ini <span class="unit-hint">Rp / Saham</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="dcf_price" value="3450" step="50" oninput="calcDCF()" />
+                    <input type="number" inputmode="decimal" id="dcf_price" value="3450" step="50" oninput="calcDCF()" />
                   </div>
                 </div>
               </div>
@@ -899,11 +1198,9 @@
         </div>
 
         <!-- RIGHT COLUMN: OUTPUTS, CHARTS, TABLES & SENSITIVITY MATRIX -->
-        <div>
-          <!-- Diagnostic Banner -->
+        <div class="col">
           <div id="dcfDiagnostic" class="diagnostic-banner"></div>
 
-          <!-- KPI Cards -->
           <div class="kpi-grid">
             <div class="kpi-card highlight" id="kpiCardIntrinsic">
               <div class="kpi-label">Nilai Intrinsik (Perpetuity)</div>
@@ -927,7 +1224,6 @@
             </div>
           </div>
 
-          <!-- Visual Chart: Cash Flow Decomposition & Valuation Comparison -->
           <div class="card">
             <div class="card-header">
               <h2>Visualisasi Dekomposisi Nilai Sekarang (PV FCF vs. Terminal Value)</h2>
@@ -935,18 +1231,18 @@
             </div>
             <div class="card-body">
               <div class="chart-box" id="dcfChartContainer"></div>
+              <p class="scroll-hint" style="padding-left:0;">Geser grafik ke samping untuk melihat seluruhnya.</p>
             </div>
           </div>
 
-          <!-- 10-Year Projection Table -->
           <div class="card">
             <div class="card-header">
               <h2>Jadwal Proyeksi &amp; Diskonto Arus Kas Bebas (Tahun 1–10)</h2>
               <span class="subtitle">Semua angka arus kas dalam Miliar Rp</span>
             </div>
-            <div class="card-body" style="padding: 0;">
+            <div class="card-body flush">
               <div class="table-responsive">
-                <table class="data-table" id="dcfTable">
+                <table class="data-table" id="dcfTable" style="min-width:680px;">
                   <thead>
                     <tr>
                       <th>Periode</th>
@@ -961,20 +1257,21 @@
                   <tbody id="dcfTableBody"></tbody>
                 </table>
               </div>
+              <p class="scroll-hint" style="padding-bottom:10px;">Geser tabel ke samping untuk melihat semua kolom.</p>
             </div>
           </div>
 
-          <!-- 2D Sensitivity Matrix -->
           <div class="card">
             <div class="card-header">
               <h2>Matriks Stress-Test Sensitivitas: WACC vs. Terminal Growth Rate (g<sub>n</sub>)</h2>
               <span class="subtitle">Hijau = Di atas Harga Pasar (Undervalued) | Merah = Di bawah Harga Pasar
                 (Overvalued)</span>
             </div>
-            <div class="card-body" style="padding: 0;">
+            <div class="card-body flush">
               <div class="table-responsive">
                 <table class="data-table matrix-table" id="dcfMatrixTable"></table>
               </div>
+              <p class="scroll-hint" style="padding-bottom:10px;">Geser tabel ke samping untuk melihat semua kolom g<sub>n</sub>.</p>
             </div>
           </div>
         </div>
@@ -989,7 +1286,7 @@
       <div class="two-col-grid">
 
         <!-- LEFT: DIVIDEND DISCOUNT MODEL (GGM & H-MODEL) -->
-        <div>
+        <div class="col">
           <div class="card">
             <div class="card-header">
               <h2>A. Dividend Discount Model (Gordon Growth &amp; 2-Stage H-Model)</h2>
@@ -1001,25 +1298,25 @@
                 <div class="input-group">
                   <label>Dividen Terakhir (D<sub>0</sub>) <span class="unit-hint">Rp / Saham</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="ddm_d0" value="180" step="5" oninput="calcDDM()" />
+                    <input type="number" inputmode="decimal" id="ddm_d0" value="180" step="5" oninput="calcDDM()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Harga Saham Saat Ini <span class="unit-hint">Rp / Saham</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="ddm_price" value="3450" step="50" oninput="calcDDM()" />
+                    <input type="number" inputmode="decimal" id="ddm_price" value="3450" step="50" oninput="calcDDM()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Return on Equity (ROE) <span class="unit-hint">% Tahunan</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="ddm_roe" value="18.5" step="0.5" oninput="calcDDM()" />
+                    <input type="number" inputmode="decimal" id="ddm_roe" value="18.5" step="0.5" oninput="calcDDM()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Dividend Payout Ratio <span class="unit-hint">% Laba Bersih</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="ddm_payout" value="60.0" step="1.0" oninput="calcDDM()" />
+                    <input type="number" inputmode="decimal" id="ddm_payout" value="60.0" step="1.0" oninput="calcDDM()" />
                   </div>
                 </div>
               </div>
@@ -1029,32 +1326,32 @@
                 <div class="input-group">
                   <label>Cost of Equity (K<sub>e</sub>) <span class="unit-hint">% Required Return</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="ddm_ke" value="11.50" step="0.25" oninput="calcDDM()" />
+                    <input type="number" inputmode="decimal" id="ddm_ke" value="11.50" step="0.25" oninput="calcDDM()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Long-Term Growth (g<sub>L</sub>) <span class="unit-hint">% Konstan</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="ddm_gl" value="6.00" step="0.25" oninput="calcDDM()" />
+                    <input type="number" inputmode="decimal" id="ddm_gl" value="6.00" step="0.25" oninput="calcDDM()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Short-Term Growth (g<sub>S</sub>) <span class="unit-hint">% Fase Awal (H-Model)</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="ddm_gs" value="12.00" step="0.5" oninput="calcDDM()" />
+                    <input type="number" inputmode="decimal" id="ddm_gs" value="12.00" step="0.5" oninput="calcDDM()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Durasi Transisi (2H) <span class="unit-hint">Tahun Menuju g<sub>L</sub></span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="ddm_2h" value="6" step="1" oninput="calcDDM()" />
+                    <input type="number" inputmode="decimal" id="ddm_2h" value="6" step="1" oninput="calcDDM()" />
                   </div>
                 </div>
               </div>
 
               <div id="ddmDiagnostic" class="diagnostic-banner" style="margin-top: 16px;"></div>
 
-              <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 14px; margin-bottom: 0;">
+              <div class="kpi-grid cols-2">
                 <div class="kpi-card highlight">
                   <div class="kpi-label">Nilai Wajar Gordon Growth (GGM)</div>
                   <div class="kpi-value" id="ddm_out_ggm">Rp 0</div>
@@ -1081,7 +1378,7 @@
         </div>
 
         <!-- RIGHT: RELATIVE VALUATION, GRAHAM NUMBER & REVERSE DCF -->
-        <div>
+        <div class="col">
           <div class="card">
             <div class="card-header">
               <h2>B. Relative Valuation (Multiples), Graham Number &amp; Reverse DCF</h2>
@@ -1093,43 +1390,42 @@
                 <div class="input-group">
                   <label>Laba per Saham (EPS) <span class="unit-hint">Rp Annualized</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="rel_eps" value="285" step="5" oninput="calcRelative()" />
+                    <input type="number" inputmode="decimal" id="rel_eps" value="285" step="5" oninput="calcRelative()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Nilai Buku per Saham (BVPS) <span class="unit-hint">Rp Ekuitas/Saham</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="rel_bvps" value="1540" step="20" oninput="calcRelative()" />
+                    <input type="number" inputmode="decimal" id="rel_bvps" value="1540" step="20" oninput="calcRelative()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Target P/E Wajar (Industri) <span class="unit-hint">Kali (x)</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="rel_target_pe" value="14.5" step="0.5" oninput="calcRelative()" />
+                    <input type="number" inputmode="decimal" id="rel_target_pe" value="14.5" step="0.5" oninput="calcRelative()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Target PBV Wajar (Historis) <span class="unit-hint">Kali (x)</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="rel_target_pbv" value="2.50" step="0.1" oninput="calcRelative()" />
+                    <input type="number" inputmode="decimal" id="rel_target_pbv" value="2.50" step="0.1" oninput="calcRelative()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Ekspektasi Growth EPS <span class="unit-hint">% CAGR 3–5 Thn</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="rel_eps_g" value="11.5" step="0.5" oninput="calcRelative()" />
+                    <input type="number" inputmode="decimal" id="rel_eps_g" value="11.5" step="0.5" oninput="calcRelative()" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Harga Pasar Saat Ini <span class="unit-hint">Rp / Saham</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="rel_price" value="3450" step="50" oninput="calcRelative()" />
+                    <input type="number" inputmode="decimal" id="rel_price" value="3450" step="50" oninput="calcRelative()" />
                   </div>
                 </div>
               </div>
 
-              <div class="kpi-grid"
-                style="grid-template-columns: repeat(2, 1fr); margin-top: 16px; margin-bottom: 14px;">
+              <div class="kpi-grid cols-2 spaced">
                 <div class="kpi-card">
                   <div class="kpi-label">Valuasi Wajar P/E &amp; PBV Rata-rata</div>
                   <div class="kpi-value" id="rel_out_blend">Rp 0</div>
@@ -1152,9 +1448,9 @@
                 </div>
               </div>
 
-              <!-- Summary Football Field Valuation Chart -->
               <div class="form-section-title">Ringkasan Rentang Valuasi ("Football Field" Comps vs. Harga Pasar)</div>
               <div class="chart-box" id="footballFieldChart"></div>
+              <p class="scroll-hint" style="padding-left:0;">Geser grafik ke samping untuk melihat seluruhnya.</p>
             </div>
           </div>
         </div>
@@ -1169,7 +1465,7 @@
       <div class="workspace-grid">
 
         <!-- LEFT COLUMN: BOND INPUTS & RATE SHOCK SIMULATOR -->
-        <div>
+        <div class="col">
           <div class="card">
             <div class="card-header">
               <h2>A. Karakteristik Instrumen Obligasi</h2>
@@ -1182,13 +1478,13 @@
                   <label>Nilai Nominal / Par Value (Face Value) <span class="unit-hint">Rp (Misal
                       1.000.000.000)</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="bond_par" value="1000000000" step="10000000" oninput="calcBond('yield')" />
+                    <input type="number" inputmode="decimal" id="bond_par" value="1000000000" step="10000000" oninput="calcBond('yield')" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Kupon Tahunan (Coupon Rate) <span class="unit-hint">% / Tahun</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="bond_coupon" value="7.00" step="0.125" oninput="calcBond('yield')" />
+                    <input type="number" inputmode="decimal" id="bond_coupon" value="7.00" step="0.125" oninput="calcBond('yield')" />
                   </div>
                 </div>
                 <div class="input-group">
@@ -1205,20 +1501,20 @@
                 <div class="input-group">
                   <label>Sisa Tenor Jatuh Tempo <span class="unit-hint">Tahun</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="bond_years" value="10" step="0.5" min="0.5" max="50"
+                    <input type="number" inputmode="decimal" id="bond_years" value="10" step="0.5" min="0.5" max="50"
                       oninput="calcBond('yield')" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Pajak Bunga Obligasi <span class="unit-hint">% PPh Final (ID=10%)</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="bond_tax" value="10.0" step="1.0" oninput="calcBond('yield')" />
+                    <input type="number" inputmode="decimal" id="bond_tax" value="10.0" step="1.0" oninput="calcBond('yield')" />
                   </div>
                 </div>
               </div>
 
               <div class="form-section-title">Sinkronisasi Dua Arah: YTM Pasar &harr; Harga Pasar (% Par)</div>
-              <p style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px;">
+              <p class="hint-text" style="margin-bottom: 10px;">
                 Ubah <strong>YTM Pasar</strong> untuk mencari Harga Wajar, atau ubah <strong>Harga Pasar (%
                   Par)</strong> untuk mencari YTM secara iteratif (Newton-Raphson).
               </p>
@@ -1226,13 +1522,13 @@
                 <div class="input-group">
                   <label>Yield to Maturity (YTM) <span class="unit-hint">% Diskonto Pasar</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="bond_ytm" value="6.65" step="0.05" oninput="calcBond('yield')" />
+                    <input type="number" inputmode="decimal" id="bond_ytm" value="6.65" step="0.05" oninput="calcBond('yield')" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Harga Obligasi (% Par) <span class="unit-hint">Par = 100.00%</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="bond_price_pct" value="102.52" step="0.10" oninput="calcBond('price')" />
+                    <input type="number" inputmode="decimal" id="bond_price_pct" value="102.52" step="0.10" oninput="calcBond('price')" />
                   </div>
                 </div>
               </div>
@@ -1242,14 +1538,14 @@
                 <div class="input-group">
                   <label>Tahun Menuju Call Pertama <span class="unit-hint">Tahun (Years to Call)</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="bond_call_years" value="5" step="0.5" min="0.5"
+                    <input type="number" inputmode="decimal" id="bond_call_years" value="5" step="0.5" min="0.5"
                       oninput="calcBond('yield')" />
                   </div>
                 </div>
                 <div class="input-group">
                   <label>Harga Tebus Call (Call Price) <span class="unit-hint">% dari Par</span></label>
                   <div class="input-wrapper">
-                    <input type="number" id="bond_call_price" value="102.00" step="0.5" oninput="calcBond('yield')" />
+                    <input type="number" inputmode="decimal" id="bond_call_price" value="102.00" step="0.5" oninput="calcBond('yield')" />
                   </div>
                 </div>
               </div>
@@ -1263,18 +1559,18 @@
               <span class="badge badge-amber" id="shockBadge">&Delta;y: +100 bps</span>
             </div>
             <div class="card-body">
-              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+              <label for="bond_shock_bps" style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
                 Geser Perubahan Suku Bunga / Yield (&Delta;y dalam Basis Poin, 100 bps = 1,00%):
               </label>
               <div class="slider-row">
-                <span style="font-family:var(--font-mono); font-size:12px;">-300 bps</span>
+                <span>-300 bps</span>
                 <input type="range" id="bond_shock_bps" min="-300" max="300" step="10" value="100"
                   oninput="calcBond('yield')" />
-                <span style="font-family:var(--font-mono); font-size:12px;">+300 bps</span>
+                <span>+300 bps</span>
               </div>
 
               <div class="table-responsive">
-                <table class="data-table">
+                <table class="data-table" style="min-width:480px;">
                   <thead>
                     <tr>
                       <th>Metode Estimasi</th>
@@ -1286,16 +1582,15 @@
                   <tbody id="bondShockTableBody"></tbody>
                 </table>
               </div>
-              <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 10px;" id="bondConvexityInsight"></p>
+              <p class="hint-text" style="margin-top: 10px;" id="bondConvexityInsight"></p>
             </div>
           </div>
         </div>
 
         <!-- RIGHT COLUMN: BOND KPIs, PRICE-YIELD CURVE & CASH FLOW SCHEDULE -->
-        <div>
+        <div class="col">
           <div id="bondDiagnostic" class="diagnostic-banner"></div>
 
-          <!-- 8 Key Bond Metrics -->
           <div class="kpi-grid">
             <div class="kpi-card highlight">
               <div class="kpi-label">Harga Wajar (Clean Price)</div>
@@ -1339,7 +1634,6 @@
             </div>
           </div>
 
-          <!-- Price-Yield Curve vs Tangent Line SVG -->
           <div class="card">
             <div class="card-header">
               <h2>Kurva Harga-Yield Aktual (Konveks) vs. Aproksimasi Garis Singgung Modified Duration</h2>
@@ -1347,18 +1641,18 @@
             </div>
             <div class="card-body">
               <div class="chart-box" id="bondCurveContainer"></div>
+              <p class="scroll-hint" style="padding-left:0;">Geser grafik ke samping untuk melihat seluruhnya.</p>
             </div>
           </div>
 
-          <!-- Bond Cash Flow Schedule & Duration/Convexity Weights -->
           <div class="card">
             <div class="card-header">
               <h2>Jadwal Diskonto Arus Kas Obligasi, Bobot Durasi &amp; Konveksitas</h2>
               <span class="subtitle" id="bondScheduleSummary">Menampilkan rincian periode kupon</span>
             </div>
-            <div class="card-body" style="padding: 0;">
+            <div class="card-body flush">
               <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
-                <table class="data-table">
+                <table class="data-table" style="min-width:680px;">
                   <thead>
                     <tr>
                       <th>Periode (t)</th>
@@ -1373,6 +1667,7 @@
                   <tbody id="bondTableBody"></tbody>
                 </table>
               </div>
+              <p class="scroll-hint" style="padding-bottom:10px;">Geser tabel ke samping untuk melihat semua kolom.</p>
             </div>
           </div>
         </div>
@@ -1385,78 +1680,82 @@
     <!-- ================================================================= -->
     <section id="tab-audit" class="tab-panel">
       <div class="two-col-grid">
-        <div class="card">
-          <div class="card-header">
-            <h2>1. Metodologi &amp; Titik Buta Valuasi Ekuitas (DCF, WACC &amp; DDM)</h2>
-          </div>
-          <div class="card-body mentor-note">
-            <div class="form-section-title">Rumus Inti Valuasi Saham</div>
-            <div class="formula-box">
-              WACC = (E/V &times; K<sub>e</sub>) + (D/V &times; K<sub>d</sub> &times; (1 - T))<br />
-              K<sub>e</sub> (CAPM) = R<sub>f</sub> + &beta; &times; (R<sub>m</sub> - R<sub>f</sub>)<br />
-              Enterprise Value (DCF) = &Sigma; [FCF<sub>t</sub> / (1 + WACC)<sup>t</sup>] + [TV<sub>n</sub> / (1 +
-              WACC)<sup>n</sup>]<br />
-              Terminal Value (Perpetuity) = [FCF<sub>n</sub> &times; (1 + g<sub>n</sub>)] / (WACC - g<sub>n</sub>)<br />
-              Gordon Growth Model (P<sub>0</sub>) = D<sub>1</sub> / (K<sub>e</sub> - g<sub>L</sub>)<br />
-              H-Model (P<sub>0</sub>) = [D<sub>0</sub>(1 + g<sub>L</sub>) + D<sub>0</sub> &times; H &times;
-              (g<sub>S</sub> - g<sub>L</sub>)] / (K<sub>e</sub> - g<sub>L</sub>)
+        <div class="col">
+          <div class="card">
+            <div class="card-header">
+              <h2>1. Metodologi &amp; Titik Buta Valuasi Ekuitas (DCF, WACC &amp; DDM)</h2>
             </div>
-            <div class="form-section-title">Titik Buta &amp; Kegagalan Asumsi (Mandatory Stress-Test)</div>
-            <ul>
-              <li><strong>Ilusi Presisi Terminal Value:</strong> Pada kebanyakan model DCF 5–10 tahun, 60% hingga 80%+
-                dari total Enterprise Value berasal dari <em>Terminal Value</em>. Pergeseran kecil 0,5% pada WACC atau
-                <em>terminal growth rate</em> (g<sub>n</sub>) dapat mengubah nilai wajar sebesar 15–30%. Jangan pernah
-                menerima angka tunggal DCF tanpa memeriksa Matriks Sensitivitas.</li>
-              <li><strong>Batas Makroekonomi pada g<sub>n</sub>:</strong> Secara matematis dan ekonomi, tingkat
-                pertumbuhan abadi (g<sub>n</sub>) tidak boleh melebihi pertumbuhan PDB nominal jangka panjang atau
-                tingkat bebas risiko (R<sub>f</sub>). Mengisi g<sub>n</sub> &ge; WACC membuat penyebut menjadi
-                nol/negatif dan menghasilkan valuasi absurd.</li>
-              <li><strong>Perangkap Beta Historis &amp; WACC Statis:</strong> Beta (&beta;) regresi historis sering kali
-                gagal menangkap perubahan struktural bisnis atau risiko likuiditas saham berkapitalisasi kecil. Selain
-                itu, mengasumsikan WACC konstan selama 10 tahun mengabaikan perubahan struktur modal (<em>leverage</em>)
-                perusahaan.</li>
-              <li><strong>Kelemahan Gordon Growth Model (DDM):</strong> Hanya valid untuk perusahaan mapan dengan
-                kebijakan <em>payout ratio</em> stabil. Jika perusahaan menahan laba tinggi tetapi menghasilkan ROE di
-                bawah Cost of Equity (K<sub>e</sub>), menahan laba justru menghancurkan nilai pemegang saham.</li>
-            </ul>
+            <div class="card-body mentor-note">
+              <div class="form-section-title">Rumus Inti Valuasi Saham</div>
+              <div class="formula-box">
+                WACC = (E/V &times; K<sub>e</sub>) + (D/V &times; K<sub>d</sub> &times; (1 - T))<br />
+                K<sub>e</sub> (CAPM) = R<sub>f</sub> + &beta; &times; (R<sub>m</sub> - R<sub>f</sub>)<br />
+                Enterprise Value (DCF) = &Sigma; [FCF<sub>t</sub> / (1 + WACC)<sup>t</sup>] + [TV<sub>n</sub> / (1 +
+                WACC)<sup>n</sup>]<br />
+                Terminal Value (Perpetuity) = [FCF<sub>n</sub> &times; (1 + g<sub>n</sub>)] / (WACC - g<sub>n</sub>)<br />
+                Gordon Growth Model (P<sub>0</sub>) = D<sub>1</sub> / (K<sub>e</sub> - g<sub>L</sub>)<br />
+                H-Model (P<sub>0</sub>) = [D<sub>0</sub>(1 + g<sub>L</sub>) + D<sub>0</sub> &times; H &times;
+                (g<sub>S</sub> - g<sub>L</sub>)] / (K<sub>e</sub> - g<sub>L</sub>)
+              </div>
+              <div class="form-section-title">Titik Buta &amp; Kegagalan Asumsi (Mandatory Stress-Test)</div>
+              <ul>
+                <li><strong>Ilusi Presisi Terminal Value:</strong> Pada kebanyakan model DCF 5–10 tahun, 60% hingga 80%+
+                  dari total Enterprise Value berasal dari <em>Terminal Value</em>. Pergeseran kecil 0,5% pada WACC atau
+                  <em>terminal growth rate</em> (g<sub>n</sub>) dapat mengubah nilai wajar sebesar 15–30%. Jangan pernah
+                  menerima angka tunggal DCF tanpa memeriksa Matriks Sensitivitas.</li>
+                <li><strong>Batas Makroekonomi pada g<sub>n</sub>:</strong> Secara matematis dan ekonomi, tingkat
+                  pertumbuhan abadi (g<sub>n</sub>) tidak boleh melebihi pertumbuhan PDB nominal jangka panjang atau
+                  tingkat bebas risiko (R<sub>f</sub>). Mengisi g<sub>n</sub> &ge; WACC membuat penyebut menjadi
+                  nol/negatif dan menghasilkan valuasi absurd.</li>
+                <li><strong>Perangkap Beta Historis &amp; WACC Statis:</strong> Beta (&beta;) regresi historis sering
+                  kali gagal menangkap perubahan struktural bisnis atau risiko likuiditas saham berkapitalisasi kecil.
+                  Selain itu, mengasumsikan WACC konstan selama 10 tahun mengabaikan perubahan struktur modal
+                  (<em>leverage</em>) perusahaan.</li>
+                <li><strong>Kelemahan Gordon Growth Model (DDM):</strong> Hanya valid untuk perusahaan mapan dengan
+                  kebijakan <em>payout ratio</em> stabil. Jika perusahaan menahan laba tinggi tetapi menghasilkan ROE di
+                  bawah Cost of Equity (K<sub>e</sub>), menahan laba justru menghancurkan nilai pemegang saham.</li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <h2>2. Metodologi &amp; Titik Buta Instrumen Pendapatan Tetap (Obligasi)</h2>
-          </div>
-          <div class="card-body mentor-note">
-            <div class="form-section-title">Rumus Inti Obligasi, Durasi &amp; Konveksitas</div>
-            <div class="formula-box">
-              Harga Obligasi (P) = &Sigma; [C / (1 + y/m)<sup>t</sup>] + [Par / (1 + y/m)<sup>N</sup>]<br />
-              Macaulay Duration (Thn) = (1 / m) &times; &Sigma; [t &times; PV(CF<sub>t</sub>) / P]<br />
-              Modified Duration (D<sub>mod</sub>) = Macaulay Duration / (1 + y/m)<br />
-              DV01 (Dollar Value of 01) = D<sub>mod</sub> &times; P &times; 0,0001<br />
-              Convexity (C) = [1 / (P &times; (1 + y/m)<sup>2</sup> &times; m<sup>2</sup>)] &times; &Sigma; [t(t + 1)
-              &times; PV(CF<sub>t</sub>)]<br />
-              Estimasi &Delta;P (%) &approx; (-D<sub>mod</sub> &times; &Delta;y) + [&frac12; &times; Convexity &times;
-              (&Delta;y)<sup>2</sup>]
+        <div class="col">
+          <div class="card">
+            <div class="card-header">
+              <h2>2. Metodologi &amp; Titik Buta Instrumen Pendapatan Tetap (Obligasi)</h2>
             </div>
-            <div class="form-section-title">Titik Buta &amp; Kegagalan Asumsi (Mandatory Stress-Test)</div>
-            <ul>
-              <li><strong>Asumsi Reinvestasi pada YTM:</strong> Angka <em>Yield to Maturity</em> (YTM) mengasumsikan
-                secara implisit bahwa 100% kupon yang diterima setiap semester dapat diinvestasikan kembali pada tingkat
-                imbal hasil yang sama persis dengan YTM awal hingga jatuh tempo. Jika suku bunga turun di masa depan,
-                realisasi imbal hasil aktual akan lebih rendah dari YTM awal (<em>reinvestment risk</em>).</li>
-              <li><strong>Kegagalan Modified Duration pada Guncangan Besar:</strong> <em>Modified Duration</em> hanyalah
-                turunan pertama (garis singgung linier) dari kurva harga-yield. Untuk perubahan suku bunga kecil
-                (&pm;10–25 bps), aproksimasi linier cukup akurat. Namun untuk guncangan &pm;100–300 bps, mengabaikan
-                <strong>Convexity</strong> akan membuat Anda menaksir terlalu tinggi kerugian saat bunga naik dan
-                menaksir terlalu rendah keuntungan saat bunga turun.</li>
-              <li><strong>Asumsi Pergeseran Kurva Imbal Hasil Paralel:</strong> Durasi standar mengasumsikan kurva imbal
-                hasil (<em>yield curve</em>) bergeser secara paralel di semua tenor, padahal di dunia nyata kurva sering
-                mengalami <em>steepening</em>, <em>flattening</em>, atau <em>inversion</em>.</li>
-              <li><strong>Risiko Opsi Call (Negative Convexity):</strong> Untuk obligasi korporasi yang memiliki fitur
-                <em>Callable</em>, ketika suku bunga pasar turun tajam di bawah kupon, penerbit akan menebus lebih awal
-                pada <em>Call Price</em>. Selalu gunakan yang terendah antara YTM dan YTC (<strong>Yield to
-                  Worst</strong>).</li>
-            </ul>
+            <div class="card-body mentor-note">
+              <div class="form-section-title">Rumus Inti Obligasi, Durasi &amp; Konveksitas</div>
+              <div class="formula-box">
+                Harga Obligasi (P) = &Sigma; [C / (1 + y/m)<sup>t</sup>] + [Par / (1 + y/m)<sup>N</sup>]<br />
+                Macaulay Duration (Thn) = (1 / m) &times; &Sigma; [t &times; PV(CF<sub>t</sub>) / P]<br />
+                Modified Duration (D<sub>mod</sub>) = Macaulay Duration / (1 + y/m)<br />
+                DV01 (Dollar Value of 01) = D<sub>mod</sub> &times; P &times; 0,0001<br />
+                Convexity (C) = [1 / (P &times; (1 + y/m)<sup>2</sup> &times; m<sup>2</sup>)] &times; &Sigma; [t(t + 1)
+                &times; PV(CF<sub>t</sub>)]<br />
+                Estimasi &Delta;P (%) &approx; (-D<sub>mod</sub> &times; &Delta;y) + [&frac12; &times; Convexity &times;
+                (&Delta;y)<sup>2</sup>]
+              </div>
+              <div class="form-section-title">Titik Buta &amp; Kegagalan Asumsi (Mandatory Stress-Test)</div>
+              <ul>
+                <li><strong>Asumsi Reinvestasi pada YTM:</strong> Angka <em>Yield to Maturity</em> (YTM) mengasumsikan
+                  secara implisit bahwa 100% kupon yang diterima setiap semester dapat diinvestasikan kembali pada
+                  tingkat imbal hasil yang sama persis dengan YTM awal hingga jatuh tempo. Jika suku bunga turun di masa
+                  depan, realisasi imbal hasil aktual akan lebih rendah dari YTM awal (<em>reinvestment risk</em>).</li>
+                <li><strong>Kegagalan Modified Duration pada Guncangan Besar:</strong> <em>Modified Duration</em>
+                  hanyalah turunan pertama (garis singgung linier) dari kurva harga-yield. Untuk perubahan suku bunga
+                  kecil (&pm;10–25 bps), aproksimasi linier cukup akurat. Namun untuk guncangan &pm;100–300 bps,
+                  mengabaikan <strong>Convexity</strong> akan membuat Anda menaksir terlalu tinggi kerugian saat bunga
+                  naik dan menaksir terlalu rendah keuntungan saat bunga turun.</li>
+                <li><strong>Asumsi Pergeseran Kurva Imbal Hasil Paralel:</strong> Durasi standar mengasumsikan kurva
+                  imbal hasil (<em>yield curve</em>) bergeser secara paralel di semua tenor, padahal di dunia nyata
+                  kurva sering mengalami <em>steepening</em>, <em>flattening</em>, atau <em>inversion</em>.</li>
+                <li><strong>Risiko Opsi Call (Negative Convexity):</strong> Untuk obligasi korporasi yang memiliki fitur
+                  <em>Callable</em>, ketika suku bunga pasar turun tajam di bawah kupon, penerbit akan menebus lebih
+                  awal pada <em>Call Price</em>. Selalu gunakan yang terendah antara YTM dan YTC (<strong>Yield to
+                    Worst</strong>).</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -1503,21 +1802,24 @@
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       btnEl.classList.add('active');
+      // Pastikan tab aktif terlihat di bar yang bisa digeser (layar sempit)
+      try { btnEl.scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) { }
+    }
+
+    function currentTheme() {
+      const explicit = document.documentElement.getAttribute('data-theme');
+      if (explicit) return explicit;
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+
+    function applyThemeLabel() {
+      document.getElementById('themeBtn').textContent = currentTheme() === 'dark' ? 'Mode Terang' : 'Mode Gelap';
     }
 
     function toggleTheme() {
-      const htmlEl = document.documentElement;
-      const btn = document.getElementById('themeBtn');
-      if (htmlEl.getAttribute('data-theme') === 'dark') {
-        htmlEl.removeAttribute('data-theme');
-        btn.textContent = 'Mode Gelap';
-      } else {
-        htmlEl.setAttribute('data-theme', 'dark');
-        btn.textContent = 'Mode Terang';
-      }
-      calcDCF();
-      calcRelative();
-      calcBond('yield');
+      const next = currentTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      applyThemeLabel();
     }
 
     // =========================================================================
@@ -1644,6 +1946,7 @@
 
     // =========================================================================
     // MODULE 1B: MULTI-STAGE DCF VALUATION
+    // Satuan: Miliar Rp / Miliar lembar = Rp per lembar (langsung, tanpa konversi).
     // =========================================================================
     function computeIntrinsicDCF(fcf0, waccPct, g1Pct, g2Pct, gnPct, cash, debt, shares) {
       const r = waccPct / 100;
@@ -1680,13 +1983,6 @@
       const pvTVPerp = tvPerp / Math.pow(1 + r, 10);
       const evPerp = sumPVFCF + pvTVPerp;
       const eqValPerp = evPerp + cash - debt;
-      const intrinsicPerShare = (eqValPerp * 1000) / shares; // Miliar Rp / Miliar lembar = Rp/lembar (Wait: Miliar Rp / Miliar lembar = Rp 1! Let's check units!)
-      // Wait: if FCF0 is in Miliar Rp (e.g. 5,200 Miliar = Rp 5.2 Triliun) and shares is 24.50 Miliar lembar:
-      // 1 Miliar Rp / 1 Miliar lembar = Rp 1? NO!
-      // 5,200 Miliar Rp = 5,200,000,000,000 Rp.
-      // Divided by 24.50 Miliar lembar (24,500,000,000 lembar) = 5,200 / 24.50 = Rp 212.24 per share!
-      // And if EV is 85,000 Miliar Rp (Rp 85 Triliun), divided by 24.50 Miliar lembar = 85,000 / 24.50 = Rp 3,469 per share!
-      // Good catch! Miliar Rp divided by Miliar Lembar is directly Rp per lembar!
       const perShareExact = eqValPerp / shares;
 
       return {
@@ -1820,19 +2116,14 @@
       `;
       tbody.innerHTML = htmlRows;
 
-      // Render SVG Bar Chart
       renderDCFChart(res, intrinsicPrice, mosPrice, priceMult, marketPrice);
-
-      // Render 2D Sensitivity Matrix
       renderDCFMatrix(fcf0, waccPct, g1Pct, g2Pct, gnPct, cash, debt, shares, marketPrice);
     }
 
     function renderDCFChart(res, intrinsicPrice, mosPrice, priceMult, marketPrice) {
       const container = document.getElementById('dcfChartContainer');
       const w = 760, h = 230;
-      const maxPV = Math.max(...res.rows.map(x => x.pv), res.pvTVPerp * 0.45);
 
-      // Left half: PV FCF bars (Year 1 to 10 + TV stacked bar)
       let barsSvg = "";
       const chartLeft = 45, chartBottom = 185, chartHeight = 140;
       const barWidth = 26, gap = 10;
@@ -1848,7 +2139,6 @@
         `;
       });
 
-      // Terminal Value Bar
       const tvX = chartLeft + 10 * (barWidth + gap) + 6;
       const tvH = chartHeight;
       const tvY = chartBottom - tvH;
@@ -1858,7 +2148,6 @@
         <text x="${tvX + (barWidth + 12) / 2}" y="${chartBottom + 14}" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor">PV TV</text>
       `;
 
-      // Right half: Price comparison horizontal bars
       const compLeft = 500;
       const maxPrice = Math.max(intrinsicPrice, priceMult, marketPrice, mosPrice, 100) * 1.15;
       const compItems = [
@@ -1878,8 +2167,10 @@
         `;
       });
 
+      // Tanpa atribut width/height: ukuran mengikuti viewBox; min-width menjaga teks tetap terbaca
+      // di layar sempit (kontainer .chart-box akan bisa digeser horizontal).
       container.innerHTML = `
-        <svg viewBox="0 0 ${w} ${h}" width="100%" height="220" style="color: var(--text-main);">
+        <svg class="chart-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Grafik PV arus kas dan perbandingan harga per saham" style="min-width: 640px; color: var(--text-main);">
           <text x="${chartLeft}" y="20" font-size="11.5" font-weight="700" fill="currentColor">Present Value Arus Kas per Tahun vs. PV Terminal Value (Miliar Rp)</text>
           <line x1="${chartLeft - 5}" y1="${chartBottom}" x2="${tvX + 48}" y2="${chartBottom}" stroke="currentColor" stroke-opacity="0.25" />
           ${barsSvg}
@@ -1983,7 +2274,6 @@
         diagEl.innerHTML = `<strong>KONSISTENSI FUNDAMENTAL VALID:</strong> Pertumbuhan jangka panjang (${fmtNum(glPct, 2)}%) ditopang dengan sehat oleh <em>Sustainable Growth Rate</em> (${fmtNum(sgrPct, 2)}%).`;
       }
 
-      // Keep Football Field updated
       calcRelative();
     }
 
@@ -2023,7 +2313,7 @@
         pegStatusEl.innerHTML = `<span class="badge badge-crimson">Premium / Mahal (&gt; 1.5x)</span>`;
       }
 
-      // Reverse DCF: Solve for 10-year uniform growth rate g that equates DCF Per Share to current `price`
+      // Reverse DCF: cari growth seragam 10 tahun yang menyamakan DCF per saham dengan harga pasar
       const fcf0 = parseFloat(document.getElementById('dcf_fcf0').value) || 1;
       const waccPct = parseFloat(document.getElementById('dcf_wacc').value) || 11;
       const gnPct = parseFloat(document.getElementById('dcf_gn').value) || 4.5;
@@ -2050,7 +2340,6 @@
           ? `Pasar menuntut growth > asumsi Anda (${fmtNum(g1Input, 1)}%)`
           : `Ekspektasi pasar konservatif (< ${fmtNum(g1Input, 1)}%)`;
 
-      // Render Football Field Chart
       renderFootballField(price, fairPEPrice, fairPBVPrice, grahamNum);
     }
 
@@ -2089,7 +2378,7 @@
 
       const mktX = scaleX(marketPrice);
       container.innerHTML = `
-        <svg viewBox="0 0 650 205" width="100%" height="195" style="color: var(--text-main);">
+        <svg class="chart-svg" viewBox="0 0 650 205" role="img" aria-label="Football field valuasi dibanding harga pasar" style="min-width: 560px; color: var(--text-main);">
           ${rowsSvg}
           <line x1="${mktX}" y1="12" x2="${mktX}" y2="188" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 3" />
           <rect x="${mktX - 65}" y="2" width="130" height="18" rx="4" fill="#ef4444" />
@@ -2154,7 +2443,6 @@
         const res = priceBondFromYield(par, couponPct, freq, years, yGuess);
         const diff = res.priceRp - targetPriceRp;
         if (Math.abs(diff) < 1e-4) break;
-        // Derivative dP/dy (where y is in percentage points): dP/d(yPct) = -ModDur * P / 100
         const dPdyPct = -res.modDurationYears * res.priceRp / 100;
         if (Math.abs(dPdyPct) < 1e-9) break;
         yGuess = yGuess - diff / dPdyPct;
@@ -2189,7 +2477,7 @@
 
       const bondRes = priceBondFromYield(par, couponPct, freq, years, ytmPct);
 
-      // Net After-Tax YTM (Coupon taxed by taxPct)
+      // Net After-Tax YTM (kupon dipajaki taxPct)
       const netCouponPct = couponPct * (1 - taxPct / 100);
       const netYtmPct = solveYTMFromPrice(par, netCouponPct, freq, years, bondRes.priceRp);
 
@@ -2197,9 +2485,7 @@
       const annualCouponRp = par * (couponPct / 100);
       const currentYieldPct = bondRes.priceRp > 0 ? (annualCouponRp / bondRes.priceRp) * 100 : 0;
 
-      // Solve YTC by treating Call Price (% of Par) as redemption face value at callYears
       const callRedemptionRp = par * (callPricePct / 100);
-      // Adjust solve for YTC:
       let ytcGuess = ytmPct;
       const callN = Math.max(1, Math.round(callYears * freq));
       const cAmt = par * (couponPct / 100) / freq;
@@ -2216,7 +2502,7 @@
         ytcGuess = ytcGuess - diff / dPv;
       }
 
-      // Status Badge (Premium / Par / Discount)
+      // Status Badge
       const statusBadge = document.getElementById('bondStatusBadge');
       if (bondRes.pricePct > 100.05) {
         statusBadge.className = "badge badge-emerald";
@@ -2229,7 +2515,7 @@
         statusBadge.textContent = "PAR BOND (100,00% Par)";
       }
 
-      // Update KPI Cards
+      // KPI Cards
       document.getElementById('bond_out_price_rp').textContent = fmtRp(bondRes.priceRp, 0);
       document.getElementById('bond_out_price_pct_sub').textContent = fmtNum(bondRes.pricePct, 3) + "% dari Par";
 
@@ -2251,7 +2537,7 @@
       document.getElementById('bond_out_total_cf').textContent = fmtRp(totalCouponRp + par, 0);
       document.getElementById('bond_out_total_coupon').textContent = "Total Kupon: " + fmtRp(totalCouponRp, 0);
 
-      // Diagnostic Banner for Bond Risk
+      // Diagnostic Banner
       const bondDiag = document.getElementById('bondDiagnostic');
       if (bondRes.modDurationYears >= 7.0) {
         bondDiag.className = "diagnostic-banner";
@@ -2261,11 +2547,11 @@
         bondDiag.innerHTML = `<strong>PROFIL DURASI TERKENDALI (Modified Duration = ${fmtNum(bondRes.modDurationYears, 2)} Tahun):</strong> Sensitivitas harga moderat dengan DV01 sebesar ${fmtRp(bondRes.dv01, 0)} per basis poin dan Convexity positif sebesar ${fmtNum(bondRes.convexityYears, 2)}.`;
       }
 
-      // Interest Rate Shock Stress-Test Table
+      // Interest Rate Shock Table
       document.getElementById('shockBadge').textContent =
         "Δy: " + (shockBps >= 0 ? "+" : "") + shockBps + " bps (" + fmtPct(shockBps / 100, 2) + ")";
 
-      const dy = (shockBps / 100) / 100; // in decimal (e.g. +100 bps = +0.01)
+      const dy = (shockBps / 100) / 100;
       const pctChangeDurOnly = (-bondRes.modDurationYears * dy) * 100;
       const pctChangeDurConv = ((-bondRes.modDurationYears * dy) + (0.5 * bondRes.convexityYears * Math.pow(dy, 2))) * 100;
 
@@ -2300,10 +2586,9 @@
       document.getElementById('bondConvexityInsight').innerHTML =
         `Pada guncangan <strong>${shockBps >= 0 ? '+' : ''}${shockBps} bps</strong>, mengandalkan <em>Modified Duration</em> saja menghasilkan selisih (galat linier) sebesar <strong>${fmtNum(errorLinBps, 3)}%</strong> (${fmtRp(Math.abs(shockedRes.priceRp - priceDurRp), 0)}) dibanding harga eksak, sedangkan penambahan koreksi <strong>Convexity</strong> memangkas error menjadi hampir nol.`;
 
-      // Render Price-Yield Curve SVG
       renderBondCurveSVG(par, couponPct, freq, years, ytmPct, bondRes, shockBps);
 
-      // Render Bond Cash Flow Schedule Table
+      // Bond Cash Flow Schedule
       const tbody = document.getElementById('bondTableBody');
       let rowsHtml = "";
       bondRes.schedule.forEach(item => {
@@ -2377,8 +2662,7 @@
       const shockY = scaleY(shockP);
 
       container.innerHTML = `
-        <svg viewBox="0 0 ${w} ${h}" width="100%" height="220" style="color: var(--text-main);">
-          <!-- Grid Lines -->
+        <svg class="chart-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Kurva harga-yield obligasi dan garis singgung modified duration" style="min-width: 600px; color: var(--text-main);">
           <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + plotH}" stroke="currentColor" stroke-opacity="0.3" />
           <line x1="${padL}" y1="${padT + plotH}" x2="${padL + plotW}" y2="${padT + plotH}" stroke="currentColor" stroke-opacity="0.3" />
           <text x="${padL - 8}" y="${padT + 10}" text-anchor="end" font-size="10" font-family="monospace" fill="currentColor">${fmtNum(maxP, 1)}%</text>
@@ -2387,20 +2671,15 @@
           <text x="${padL + plotW / 2}" y="${h - 10}" text-anchor="middle" font-size="10.5" font-weight="600" fill="currentColor">Yield to Maturity (%)</text>
           <text x="${padL + plotW}" y="${h - 10}" text-anchor="end" font-size="10" font-family="monospace" fill="currentColor">Yield ${fmtNum(maxY, 1)}%</text>
 
-          <!-- Tangent Line (Modified Duration) -->
           <path d="${pathTangent}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 4" />
-          <!-- Actual Price-Yield Convex Curve -->
           <path d="${pathActual}" fill="none" stroke="#2563eb" stroke-width="3" />
 
-          <!-- Current YTM Marker -->
           <circle cx="${curX}" cy="${curY}" r="5.5" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
           <text x="${curX + 8}" y="${curY - 8}" font-size="10.5" font-weight="700" fill="currentColor">Saat Ini (${fmtNum(ytmPct, 2)}% | ${fmtNum(bondRes.pricePct, 2)}%)</text>
 
-          <!-- Shocked YTM Marker -->
           <circle cx="${shockX}" cy="${shockY}" r="5" fill="#10b981" stroke="#ffffff" stroke-width="1.5" />
           <text x="${shockX}" y="${shockY + 16}" text-anchor="middle" font-size="10" font-weight="700" fill="#10b981">Simulasi (${fmtNum(shockYtm, 2)}%)</text>
 
-          <!-- Legend -->
           <rect x="${w - 285}" y="12" width="12" height="3" fill="#2563eb" />
           <text x="${w - 268}" y="16" font-size="10.5" fill="currentColor">Kurva Aktual (Konveks)</text>
           <rect x="${w - 145}" y="12" width="12" height="3" fill="#f59e0b" />
@@ -2411,6 +2690,7 @@
 
     // Initialize all calculators on load
     window.addEventListener('DOMContentLoaded', () => {
+      applyThemeLabel();
       calcWACC();
       calcDCF();
       calcDDM();
